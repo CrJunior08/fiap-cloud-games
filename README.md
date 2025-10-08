@@ -1,216 +1,168 @@
-# 🎮 FCG - Games Service
+# 🕹️ FIAP Cloud Games — Games Service
 
-Microsserviço responsável pela gestão e busca de jogos da **FIAP Cloud Games (FCG)**.  
-Este módulo implementa **CRUD completo de jogos**, **indexação e busca com Elasticsearch**, e integra-se aos demais microsserviços de **Usuários** e **Pagamentos** via API Gateway.
-
----
-
-## 🚀 Objetivo
-
-O objetivo deste microsserviço é fornecer uma API independente e escalável para:
-- Gerenciar jogos (cadastro, atualização, exclusão e listagem).
-- Indexar e buscar jogos de forma inteligente via **Elasticsearch**.
-- Suportar recomendações e métricas de popularidade baseadas em agregações.
-- Servir como base de consulta para os demais módulos do sistema **FIAP Cloud Games**.
+Microsserviço de jogos do ecossistema FIAP Cloud Games (FCG).  
+Responsável por CRUD de jogos, indexação e busca via Elasticsearch, servindo outros microsserviços como ponto de consulta.
 
 ---
 
-## 🧱 Arquitetura
+## 🎯 Objetivos
 
-A aplicação segue o padrão **Clean Architecture / DDD**, dividida em:
+- Permitir criação, leitura, atualização e remoção de jogos.  
+- Indexar os jogos no Elasticsearch para permitir buscas inteligentes (multi-match, agregações, filtros).  
+- Servir como backend consultável pelos demais microsserviços (Users, Payments, etc).  
+- Gerar métricas ou relatórios de usos/popularidade via agregações no Elasticsearch.  
 
-```text
+---
+
+## 🧱 Arquitetura & Organização
+
+Estrutura típica com Clean Architecture / DDD:
 src/
-├── FCG.Games.Api/            → Endpoints e Controllers
-├── FCG.Games.Application/    → Casos de uso (services, handlers)
-├── FCG.Games.Domain/         → Entidades e interfaces
-├── FCG.Games.Infrastructure/ → Repositórios, Elasticsearch e persistência
-└── FCG.Games.Tests/          → Testes unitários e de integração
+├── FCG.Games.Api/ → Endpoints, Controllers, Interfaces HTTP
+├── FCG.Games.Application/ → Casos de uso, serviços de aplicação
+├── FCG.Games.Domain/ → Entidades, regras de negócio, interfaces
+├── FCG.Games.Infrastructure/ → Repositórios, Elasticsearch, persistência
+└── FCG.Games.Tests/ → Testes unitários / integração
 
 
 
+Tecnologias esperadas:
 
-## 🧩 Principais Tecnologias
-
-.NET 8 (C#)
-
-ASP.NET Core Web API
-
-Elasticsearch 8.x
-
-Docker (opcional)
-
-Swagger (documentação automática)
-
-Logger (Serilog ou integrado)
+- .NET / C#  
+- ASP.NET Core Web API  
+- Elasticsearch  
+- Docker (para ambiente local)  
+- Swagger / OpenAPI  
+- Logging  
 
 ---
 
-## ⚙️ Configuração do Ambiente
+## 🔄 Fluxo de Comunicação entre Microsserviços
 
-### 🔧 Requisitos
-- .NET SDK 8+
-- Elasticsearch rodando localmente (ou via Docker)
-- Postman (ou ferramenta REST de sua escolha)
+Aqui vai o fluxo ideal de chamadas num cenário completo:
 
-### 🐳 Subindo o Elasticsearch (opcional via Docker)
-```bash
-docker run -d --name elasticsearch `
-  -p 9200:9200 `
-  -e "discovery.type=single-node" `
-  -e "xpack.security.enabled=false" `
+[Client / Frontend]
+↓ HTTP / REST
+[API Gateway] → (roteamento + autenticação)
+↓
+[Users Service] — autentica / fornece token / dados de perfil
+↓ (token / autorização embutida)
+[Games Service] — recebe requisições de jogos e buscas
+↳ (internamente) → consulta / indexa no Elasticsearch
+↓ resultado
+[Payments Service] — para operações de compra / status
+
+
+
+
+- O Gateway distribui as requisições para o serviço apropriado.  
+- O Games Service só lida com dados de jogos e consultas.  
+- Para buscas, ele consulta o Elasticsearch e retorna resultados filtrados / ordenados.  
+- Quando há atualizações de jogos, o Games Service também reindexa ou atualiza no Elasticsearch.  
+- Os serviços podem interagir entre si via APIs REST internas autenticadas ou por eventos (se implementado).
+
+Você pode representar isso com **Mermaid**, **PlantUML** ou imagem gráfica e colocar no README ou dentro de `docs/`.
+
+### Exemplo de diagrama em **Mermaid** (para inserir no README):
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant Users
+    participant Games
+    participant Payments
+    Client->>Gateway: requisição (ex: buscar jogo)
+    Gateway->>Users: validar token / autenticação
+    Users-->>Gateway: validação OK (ou falha)
+    Gateway->>Games: encaminha requisição de jogos
+    Games->>Elasticsearch: consulta / busca
+    Elasticsearch-->>Games: resultado
+    Games-->>Gateway: retorna resposta
+    Gateway-->>Client: envia resposta ao cliente
+
+
+⚙️ Configuração do Ambiente
+Requisitos
+
+.NET SDK compatível
+
+Elasticsearch rodando localmente ou via container
+
+Ferramenta REST (Postman / Insomnia)
+
+(Opcional) Docker
+
+Docker para Elasticsearch
+docker run -d --name elasticsearch \
+  -p 9200:9200 \
+  -e "discovery.type=single-node" \
+  -e "xpack.security.enabled=false" \
   docker.elastic.co/elasticsearch/elasticsearch:8.15.0
 
 
-
-Verifique se está rodando:
+Verifique:
 
 curl http://localhost:9200
 
 
 
-⚙️ Configuração do Índice games
-
-Crie o índice manualmente no Postman ou via curl:
-PUT http://localhost:9200/games
-Content-Type: application/json
-
-{
-  "settings": { "number_of_shards": 1, "number_of_replicas": 0 },
-  "mappings": {
-    "properties": {
-      "id":         { "type": "keyword" },
-      "title":      { "type": "text" },
-      "genre":      { "type": "keyword" },
-      "platform":   { "type": "keyword" },
-      "description":{ "type": "text" },
-      "rating":     { "type": "float" },
-      "releasedAt": { "type": "date" }
-    }
-  }
-}
+Variáveis de Ambiente (exemplos)
+Variável	Descrição	Exemplo
+ELASTIC_URI	URL de conexão com Elasticsearch	http://localhost:9200
+ASPNETCORE_ENVIRONMENT	Ambiente (Development / Production)	Development
+LOG_LEVEL	Nível de log	Information, Warning, etc.
+Games_Db_ConnectionString	String de conexão com banco relacional (se aplicável)	Server=.;Database=Games;User=sa;Password=XXX
 
 
+▶️ Executar Localmente
 
-▶️ Execução do Projeto
+1. Garanta que o Elasticsearch esteja rodando.
 
-Na pasta raiz do projeto:
+2. Na raiz do projeto, execute:
 dotnet build src/FCG.Games.Api/FCG.Games.Api.csproj
-dotnet run   --project src/FCG.Games.Api/FCG.Games.Api.csproj
+dotnet run --project src/FCG.Games.Api/FCG.Games.Api.csproj
+
+3. A API por padrão rodará em algo como http://localhost:5000 ou similar.
+
+4. Acesse /swagger para ver a documentação interativa.
 
 
-Por padrão, a API roda em:
-http://localhost:5201
+🧪 Endpoints Principais
+
+Aqui vão exemplos genéricos (verifique seu código para rotas exatas):
+
+Método	Rota	Função
+GET	/api/games	Listar todos os jogos
+GET	/api/games/{id}	Obter um jogo por ID
+POST	/api/games	Criar um novo jogo
+PUT	/api/games/{id}	Atualizar jogo
+DELETE	/api/games/{id}	Deletar jogo
+GET	/search/games?q={termo}	Buscar jogos por termo (Elasticsearch)
 
 
-Acesse o Swagger:
-http://localhost:5201/swagger
+Testes
+
+Dentro de FCG.Games.Tests, você deve ter testes unitários (lógicas isoladas) e testes de integração (com o Elasticsearch, repositórios reais).
+
+Execute com:
+dotnet test
 
 
-🧪 Testes no Postman
-Criar jogo
-POST http://localhost:5201/api/games/create
-Content-Type: application/json
+📂 Estrutura e Notas Adicionais
 
-{
-  "name": "The Legend of Zelda: Tears of the Kingdom",
-  "genre": "Adventure",
-  "platform": "Nintendo Switch",
-  "description": "Explore um vasto mundo aberto e use a criatividade para resolver desafios.",
-  "rating": 9.8,
-  "releasedAt": "2023-05-12"
-}
+FCG.Games.Api → camada de entrada HTTP
 
+FCG.Games.Application → casos de uso
 
-Listar jogos
-GET http://localhost:5201/api/games
+FCG.Games.Domain → entidades, interfaces, regras
 
+FCG.Games.Infrastructure → implementação concreta (banco, Elasticsearch)
 
-Buscar jogos por título/descrição no Elasticsearch
-GET http://localhost:5201/search/games?q=Zelda
+FCG.Games.Tests → testes
 
+Pode haver pasta docs/ para diagramas visuais ou documentos auxiliares
 
-Atualizar jogo
-PUT http://localhost:5201/api/games/1
-Content-Type: application/json
-
-{
-  "id": "1",
-  "name": "Zelda TOTK",
-  "genre": "Adventure"
-}
-
-
-
-Remover jogo
-DELETE http://localhost:5201/api/games/1
-
-
-🧠 Elasticsearch: Consultas e Métricas
-Busca simples
-GET http://localhost:9200/games/_search?q=Zelda
-
-
-Consulta avançada
-POST http://localhost:9200/games/_search
-{
-  "query": {
-    "multi_match": {
-      "query": "RPG",
-      "fields": [ "title^2", "description" ]
-    }
-  }
-}
-
-
-Agregação: jogos mais bem avaliados
-POST http://localhost:9200/games/_search
-{
-  "size": 0,
-  "aggs": {
-    "top_rated": {
-      "terms": { "field": "genre" },
-      "aggs": { "avg_rating": { "avg": { "field": "rating" } } }
-    }
-  }
-}
-
-
-
-🛡️ Segurança e Logs
-
-Autenticação e autorização podem ser integradas via API Gateway.
-Requisições e respostas são logadas para auditoria.
-Erros são tratados globalmente com middleware customizado.
-
-
-🧩 Integrações
-
-Serviço	Função principal
-Users Service	Autenticação e perfis
-Payments Service	Transações e status de compra
-Elasticsearch	Busca, métricas e recomendações
-API Gateway	Roteamento, autenticação e monitoramento central
-
-
-🧰 Variáveis de Ambiente
-
-Variável	Descrição
-ELASTIC_URI	URL de conexão com o Elasticsearch (ex: http://localhost:9200
-)
-ASPNETCORE_ENVIRONMENT	Ambiente de execução (Development / Production)
-LOG_LEVEL	Nível de log desejado (Information, Warning, Error)
-
-
-📦 Deploy (exemplo local)
-
-dotnet publish src/FCG.Games.Api/FCG.Games.Api.csproj -c Release -o ./publish
-
-
-Na cloud (Azure / AWS):
-Utilize Serverless Framework ou CLI da plataforma.
-
-Configure as funções e o API Gateway apontando para o Games Service.
 
 
 
