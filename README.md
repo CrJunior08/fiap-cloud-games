@@ -19,11 +19,12 @@ O objetivo deste microsserviço é fornecer uma API independente e escalável pa
 
 A aplicação segue o padrão **Clean Architecture / DDD**, dividida em:
 src/
-├── FCG.Games.Api/ → Endpoints e Controllers
-├── FCG.Games.Application/ → Casos de uso (services, handlers)
-├── FCG.Games.Domain/ → Entidades e interfaces
-├── FCG.Games.Infrastructure/→ Repositórios, Elasticsearch e persistência
-└── FCG.Games.Tests/ → Testes unitários e de integração
+├── FCG.Games.Api/            → Endpoints e Controllers
+├── FCG.Games.Application/    → Casos de uso (services, handlers)
+├── FCG.Games.Domain/         → Entidades e interfaces
+├── FCG.Games.Infrastructure/ → Repositórios, Elasticsearch e persistência
+└── FCG.Games.Tests/          → Testes unitários e de integração
+
 
 
 ### Principais Tecnologias
@@ -166,17 +167,16 @@ POST http://localhost:9200/games/_search
 }
 
 
+
 🛡️ Segurança e Logs
 
 Autenticação e autorização podem ser integradas via API Gateway.
-
 Requisições e respostas são logadas para auditoria.
-
 Erros são tratados globalmente com middleware customizado.
 
 
-
 🧩 Integrações
+
 Serviço	Função principal
 Users Service	Autenticação e perfis
 Payments Service	Transações e status de compra
@@ -184,8 +184,8 @@ Elasticsearch	Busca, métricas e recomendações
 API Gateway	Roteamento, autenticação e monitoramento central
 
 
-
 🧰 Variáveis de Ambiente
+
 Variável	Descrição
 ELASTIC_URI	URL de conexão com o Elasticsearch (ex: http://localhost:9200
 )
@@ -194,11 +194,11 @@ LOG_LEVEL	Nível de log desejado (Information, Warning, Error)
 
 
 📦 Deploy (exemplo local)
+
 dotnet publish src/FCG.Games.Api/FCG.Games.Api.csproj -c Release -o ./publish
 
 
 Na cloud (Azure / AWS):
-
 Utilize Serverless Framework ou CLI da plataforma.
 
 Configure as funções e o API Gateway apontando para o Games Service.
