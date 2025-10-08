@@ -65,6 +65,8 @@ Você pode representar isso com **Mermaid**, **PlantUML** ou imagem gráfica e c
 
 ### Exemplo de diagrama em **Mermaid** (para inserir no README)
 
+
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -72,6 +74,8 @@ sequenceDiagram
     participant Users
     participant Games
     participant Payments
+
+
 
     Client->>Gateway: requisição (ex: buscar jogo)
     Gateway->>Users: valida token / autenticação
@@ -81,6 +85,8 @@ sequenceDiagram
     Elasticsearch-->>Games: resultado
     Games-->>Gateway: retorna resposta
     Gateway-->>Client: envia resposta ao cliente
+
+
 
 
 
