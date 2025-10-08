@@ -94,7 +94,7 @@ FCG/
 git clone https://github.com/CrJunior08/fiap-cloud-games.git
 cd fiap-cloud-games
  
- 2. Configure o banco de dados no appsettings.json. Exemplo para SQL Server:,
+2. Configure o banco de dados no appsettings.json. Exemplo para SQL Server:,
 "ConnectionStrings": {
   "DefaultConnection": "Server=localhost;Database=FCG_DB;User Id=sa;Password=SuaSenhaForteAqui;TrustServerCertificate=True;"
 }
