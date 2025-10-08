@@ -63,7 +63,7 @@ Aqui vai o fluxo ideal de chamadas num cenário completo:
 
 Você pode representar isso com **Mermaid**, **PlantUML** ou imagem gráfica e colocar no README ou dentro de `docs/`.
 
-### Exemplo de diagrama em **Mermaid** (para inserir no README):
+### Exemplo de diagrama em **Mermaid** (para inserir no README)
 
 ```mermaid
 sequenceDiagram
@@ -72,14 +72,16 @@ sequenceDiagram
     participant Users
     participant Games
     participant Payments
+
     Client->>Gateway: requisição (ex: buscar jogo)
-    Gateway->>Users: validar token / autenticação
+    Gateway->>Users: valida token / autenticação
     Users-->>Gateway: validação OK (ou falha)
     Gateway->>Games: encaminha requisição de jogos
     Games->>Elasticsearch: consulta / busca
     Elasticsearch-->>Games: resultado
     Games-->>Gateway: retorna resposta
     Gateway-->>Client: envia resposta ao cliente
+
 
 
 ⚙️ Configuração do Ambiente
