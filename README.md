@@ -85,6 +85,7 @@ sequenceDiagram
 ```
 
 
+```
 
 ⚙️ Configuração do Ambiente
 Requisitos
@@ -108,8 +109,10 @@ docker run -d --name elasticsearch \
 Verifique:
 
 curl http://localhost:9200
+```
 
 
+```
 
 Variáveis de Ambiente (exemplos)
 Variável	Descrição	Exemplo
@@ -117,6 +120,9 @@ ELASTIC_URI	URL de conexão com Elasticsearch	http://localhost:9200
 ASPNETCORE_ENVIRONMENT	Ambiente (Development / Production)	Development
 LOG_LEVEL	Nível de log	Information, Warning, etc.
 Games_Db_ConnectionString	String de conexão com banco relacional (se aplicável)	Server=.;Database=Games;User=sa;Password=XXX
+```
+
+```
 
 
 ▶️ Executar Localmente
@@ -130,6 +136,9 @@ dotnet run --project src/FCG.Games.Api/FCG.Games.Api.csproj
 3. A API por padrão rodará em algo como http://localhost:5000 ou similar.
 
 4. Acesse /swagger para ver a documentação interativa.
+```
+
+```
 
 
 🧪 Endpoints Principais
@@ -143,6 +152,7 @@ POST	/api/games	Criar um novo jogo
 PUT	/api/games/{id}	Atualizar jogo
 DELETE	/api/games/{id}	Deletar jogo
 GET	/search/games?q={termo}	Buscar jogos por termo (Elasticsearch)
+```
 
 
 Testes
@@ -152,6 +162,7 @@ Dentro de FCG.Games.Tests, você deve ter testes unitários (lógicas isoladas) 
 Execute com:
 dotnet test
 
+```
 
 📂 Estrutura e Notas Adicionais
 
@@ -166,6 +177,7 @@ FCG.Games.Infrastructure → implementação concreta (banco, Elasticsearch)
 FCG.Games.Tests → testes
 
 Pode haver pasta docs/ para diagramas visuais ou documentos auxiliares
+```
 
 
 
