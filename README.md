@@ -30,13 +30,19 @@ src/
 
 
 
-### Principais Tecnologias
-- **.NET 8 (C#)**
-- **ASP.NET Core Web API**
-- **Elasticsearch 8.x**
-- **Docker (opcional)**
-- **Swagger (documentação automática)**
-- **Logger (Serilog ou integrado)**
+## 🧩 Principais Tecnologias
+
+.NET 8 (C#)
+
+ASP.NET Core Web API
+
+Elasticsearch 8.x
+
+Docker (opcional)
+
+Swagger (documentação automática)
+
+Logger (Serilog ou integrado)
 
 ---
 
