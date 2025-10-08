@@ -18,12 +18,15 @@ O objetivo deste microsserviço é fornecer uma API independente e escalável pa
 ## 🧱 Arquitetura
 
 A aplicação segue o padrão **Clean Architecture / DDD**, dividida em:
+
+```text
 src/
 ├── FCG.Games.Api/            → Endpoints e Controllers
 ├── FCG.Games.Application/    → Casos de uso (services, handlers)
 ├── FCG.Games.Domain/         → Entidades e interfaces
 ├── FCG.Games.Infrastructure/ → Repositórios, Elasticsearch e persistência
 └── FCG.Games.Tests/          → Testes unitários e de integração
+
 
 
 
