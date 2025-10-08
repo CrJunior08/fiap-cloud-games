@@ -1,154 +1,229 @@
-🎮 FIAP Cloud Games (FCG)
+# 🎮 FCG - Games Service
 
-Plataforma de venda de jogos digitais e gerenciamento de biblioteca de jogos adquiridos, voltada para educação em tecnologia. 
-
----
-
-📌 Objetivos
-
-- Criar uma API REST em .NET 8.
-- Implementar cadastro e autenticação de usuários.
-- Gerenciar biblioteca de jogos adquiridos por cada usuário.
-- Adotar práticas de DDD, TDD/BDD, logs estruturados e documentação via Swagger.
-- Servir de fundação para futuras fases que incluem matchmaking e gestão de servidores.
+Microsserviço responsável pela gestão e busca de jogos da **FIAP Cloud Games (FCG)**.  
+Este módulo implementa **CRUD completo de jogos**, **indexação e busca com Elasticsearch**, e integra-se aos demais microsserviços de **Usuários** e **Pagamentos** via API Gateway.
 
 ---
 
-🧱 Arquitetura
+## 🚀 Objetivo
 
-- Tipo: Monolítica (foco em agilidade na fase inicial)
-- Backend: .NET 8 + ASP.NET Core (Controllers MVC)
-- ORM: Entity Framework Core
-- Autenticação: JWT (Json Web Token)
-- Padrão de Projeto: Domain-Driven Design (DDD)
-
----
-
-🔐 Perfis de Acesso
-
-- Usuário (Default): Acesso à plataforma e biblioteca de jogos adquiridos.
-- Administrador: Acesso total, incluindo cadastro de jogos, administração de usuários e criação de promoções.
+O objetivo deste microsserviço é fornecer uma API independente e escalável para:
+- Gerenciar jogos (cadastro, atualização, exclusão e listagem).
+- Indexar e buscar jogos de forma inteligente via **Elasticsearch**.
+- Suportar recomendações e métricas de popularidade baseadas em agregações.
+- Servir como base de consulta para os demais módulos do sistema **FIAP Cloud Games**.
 
 ---
 
-✅ Funcionalidades
+## 🧱 Arquitetura
 
-👥 Usuários
-- Cadastro com nome, e-mail e senha segura (mín. 8 caracteres, com letras, números e caracteres especiais)
-- Validação de e-mail e senha
-- Autenticação JWT
-- Diferenciação de perfis (User/Admin)
+A aplicação segue o padrão **Clean Architecture / DDD**, dividida em:
+src/
+├── FCG.Games.Api/ → Endpoints e Controllers
+├── FCG.Games.Application/ → Casos de uso (services, handlers)
+├── FCG.Games.Domain/ → Entidades e interfaces
+├── FCG.Games.Infrastructure/→ Repositórios, Elasticsearch e persistência
+└── FCG.Games.Tests/ → Testes unitários e de integração
 
-🎮 Jogos
-- Cadastro e associação de jogos adquiridos ao usuário (disponível para perfil Admin)
-- Listagem de biblioteca de jogos por usuário
 
----
-
-🛠️ Tecnologias Utilizadas
-
-| Tecnologia                           | Finalidade                                 |
-|-------------------------------------|-------------------------------------------|
-| .NET 8                                | Backend/API                              |
-| ASP.NET Core                   | Desenvolvimento Web               |
-| Entity Framework Core      | Persistência com Migrations      |
-| Swagger (Swashbuckle)    | Documentação da API               |
-| JWT                                   | Autenticação e Autorização        |
-| xUnit / NUnit / BDDfy         | Testes Unitários e/ou BDD         |
-| FluentValidation                 | Validações                                  |
-| Docker                           | Containerização                             |
-| Azure DevOps                     | Pipelines CI/CD                            |
-
+### Principais Tecnologias
+- **.NET 8 (C#)**
+- **ASP.NET Core Web API**
+- **Elasticsearch 8.x**
+- **Docker (opcional)**
+- **Swagger (documentação automática)**
+- **Logger (Serilog ou integrado)**
 
 ---
 
-<h2>📁 Estrutura do Projeto</h2>
+## ⚙️ Configuração do Ambiente
 
-<pre><code>
-FCG/
-│
-├── FCG.API/              API principal (.NET 8)
-│   ├── Controllers/       Endpoints RESTful
-│   ├── Middlewares/       Tratamento de exceções e logs
-│   ├── Program.cs         Configuração principal
-│   └── appsettings.json   Configurações da aplicação
-│
-├── FCG.Domain/           Entidades e regras de negócio (DDD)
-│   └── Entities/          User, Game
-│
-├── FCG.Application/      Casos de uso (Application Layer)
-│
-├── FCG.Infra/            Repositórios e contexto EF
-│   └── Migrations/        Scripts gerados pelo EF Core
-│
-├── FCG.Tests/            Testes unitários e BDD
-│
-└── README.md
-</code></pre>
+### 🔧 Requisitos
+- .NET SDK 8+
+- Elasticsearch rodando localmente (ou via Docker)
+- Postman (ou ferramenta REST de sua escolha)
 
----
+### 🐳 Subindo o Elasticsearch (opcional via Docker)
+```bash
+docker run -d --name elasticsearch `
+  -p 9200:9200 `
+  -e "discovery.type=single-node" `
+  -e "xpack.security.enabled=false" `
+  docker.elastic.co/elasticsearch/elasticsearch:8.15.0
 
-🔧 Como Rodar o Projeto
 
-1.Clone este repositório:,
-git clone https://github.com/CrJunior08/fiap-cloud-games.git
-cd fiap-cloud-games
- 
-2. Configure o banco de dados no appsettings.json. Exemplo para SQL Server:,
-"ConnectionStrings": {
-  "DefaultConnection": "Server=localhost;Database=FCG_DB;User Id=sa;Password=SuaSenhaForteAqui;TrustServerCertificate=True;"
+
+Verifique se está rodando:
+
+curl http://localhost:9200
+
+
+
+⚙️ Configuração do Índice games
+
+Crie o índice manualmente no Postman ou via curl:
+PUT http://localhost:9200/games
+Content-Type: application/json
+
+{
+  "settings": { "number_of_shards": 1, "number_of_replicas": 0 },
+  "mappings": {
+    "properties": {
+      "id":         { "type": "keyword" },
+      "title":      { "type": "text" },
+      "genre":      { "type": "keyword" },
+      "platform":   { "type": "keyword" },
+      "description":{ "type": "text" },
+      "rating":     { "type": "float" },
+      "releasedAt": { "type": "date" }
+    }
+  }
 }
 
-3.Crie o banco de dados manualmente (opcional):,
-Acesse o SQL Server Management Studio (SSMS).
-Execute:
-CREATE DATABASE FCG_DB;
 
-4. Execute as migrations:,
-dotnet ef database update
 
-5. Rode a aplicação:,
-dotnet run --project FCG.API
+▶️ Execução do Projeto
 
-Acesse a documentação Swagger:,
-http://localhost:{porta}/swagger
+Na pasta raiz do projeto:
+dotnet build src/FCG.Games.Api/FCG.Games.Api.csproj
+dotnet run   --project src/FCG.Games.Api/FCG.Games.Api.csproj
 
----
 
-🧪 Testes
+Por padrão, a API roda em:
+http://localhost:5201
 
-●	Execute os testes com:
-dotnet test
 
-TDD ou BDD aplicados no módulo de autenticação e cadastro de usuário.
+Acesse o Swagger:
+http://localhost:5201/swagger
 
----
 
-🧠 Event Storming
+🧪 Testes no Postman
+Criar jogo
+POST http://localhost:5201/api/games/create
+Content-Type: application/json
 
-Documentação disponível no Miro contendo: https://miro.com/app/board/uXjVI0KTeKY=/
+{
+  "name": "The Legend of Zelda: Tears of the Kingdom",
+  "genre": "Adventure",
+  "platform": "Nintendo Switch",
+  "description": "Explore um vasto mundo aberto e use a criatividade para resolver desafios.",
+  "rating": 9.8,
+  "releasedAt": "2023-05-12"
+}
 
-●	Fluxo de Criação de Usuário
 
-●	Fluxo de Criação de Jogos
+Listar jogos
+GET http://localhost:5201/api/games
 
-●	Cores e domínios conforme DDD (Commands, Events, Aggregates)
 
---- 
+Buscar jogos por título/descrição no Elasticsearch
+GET http://localhost:5201/search/games?q=Zelda
 
-🐳 Docker
 
-Build e execução local com Docker: 
+Atualizar jogo
+PUT http://localhost:5201/api/games/1
+Content-Type: application/json
 
-docker build -t fcg-api:latest .
-docker run -d -p 8080:80 fcg-api:latest
+{
+  "id": "1",
+  "name": "Zelda TOTK",
+  "genre": "Adventure"
+}
 
----
 
-🔄 CI/CD (Azure DevOps)
 
-●	CI: Build e Testes automáticos a cada commit/PR (azure-pipelines.yml)
+Remover jogo
+DELETE http://localhost:5201/api/games/1
 
-●	CD: Deploy automatizado após merge na main (cd-pipeline.yml)
 
-●	Executado com agente local configurado com Docker Desktop
+🧠 Elasticsearch: Consultas e Métricas
+Busca simples
+GET http://localhost:9200/games/_search?q=Zelda
+
+
+Consulta avançada
+POST http://localhost:9200/games/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "RPG",
+      "fields": [ "title^2", "description" ]
+    }
+  }
+}
+
+
+Agregação: jogos mais bem avaliados
+POST http://localhost:9200/games/_search
+{
+  "size": 0,
+  "aggs": {
+    "top_rated": {
+      "terms": { "field": "genre" },
+      "aggs": { "avg_rating": { "avg": { "field": "rating" } } }
+    }
+  }
+}
+
+
+🛡️ Segurança e Logs
+
+Autenticação e autorização podem ser integradas via API Gateway.
+
+Requisições e respostas são logadas para auditoria.
+
+Erros são tratados globalmente com middleware customizado.
+
+
+
+🧩 Integrações
+Serviço	Função principal
+Users Service	Autenticação e perfis
+Payments Service	Transações e status de compra
+Elasticsearch	Busca, métricas e recomendações
+API Gateway	Roteamento, autenticação e monitoramento central
+
+
+
+🧰 Variáveis de Ambiente
+Variável	Descrição
+ELASTIC_URI	URL de conexão com o Elasticsearch (ex: http://localhost:9200
+)
+ASPNETCORE_ENVIRONMENT	Ambiente de execução (Development / Production)
+LOG_LEVEL	Nível de log desejado (Information, Warning, Error)
+
+
+📦 Deploy (exemplo local)
+dotnet publish src/FCG.Games.Api/FCG.Games.Api.csproj -c Release -o ./publish
+
+
+Na cloud (Azure / AWS):
+
+Utilize Serverless Framework ou CLI da plataforma.
+
+Configure as funções e o API Gateway apontando para o Games Service.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
